@@ -6,7 +6,33 @@
         xmlns:local="clr-namespace:Server.Views"
         mc:Ignorable="d"
         Title="ServerView" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+    <StackPanel>
+        <WrapPanel>
+            <Label>IP:
+            </Label>
+            <Label>0.0.0.0</Label>
+        </WrapPanel>
+        <WrapPanel>
+            <Label>Tiempo restante:</Label>
+            <Label>0:00</Label>
+        </WrapPanel>
+        <WrapPanel>
+            <Label>Pregunta:</Label>
+            <Label>Porque los cerdos no vuelan</Label>
+        </WrapPanel>
+        <Label>Opcion 1</Label>
+        <Label>Opcion 2</Label>
+        <Button>Empezar Quiz</Button>
+        <WrapPanel>
+            <Label>Respuesta Correcta:</Label>
+            <Label>Opcion 1</Label>
+        </WrapPanel>
+        <ListBox>
+            <StackPanel>
+                <Label>Pepe</Label>
+                <Label>Pepe</Label>
+                <Label>Pepe</Label>
+            </StackPanel>
+        </ListBox>
+    </StackPanel>
 </Window>

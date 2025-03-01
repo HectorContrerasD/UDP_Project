@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Server.Models.DTOs
 {
-    public class UserDTO
+    public class ServerMessageDTO
     {
-        public string? Name { get; set; }
-        public string? Answer { get; set; }
-        public bool IsCorrect { get; set; }
+        public QuestionDTO Question { get; set; }
+        public string Type { get; set; }
     }
 }
