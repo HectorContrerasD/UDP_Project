@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Server.Models.DTOs
 {
-    public class AnswerModel
+    public class AnswerMessageDTO
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public bool Correct { get;set; }
+        public string Option { get; set; }
+        public DateTime Timestamp { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Server.Models.DTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,9 +9,11 @@ namespace Server.Models
 {
     public class QuestionModel
     {
-        public Guid ID { get; set; }
+        public Guid Id { get; set; }
         public string Question { get; set; }
         public string[] Options { get; set; }
+        public string Correct { get; set; } 
         public TimeSpan TimeOut { get; set; }
+        public List<AnswerModel> Answers { get; set; }  
     }
 }

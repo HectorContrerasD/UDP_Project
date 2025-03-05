@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Server.Models.DTOs
 {
-    public class QuestionDTO
+    public class QuestionMessageDTO
     {
+        public Guid Id { get; set; }
         public string Question { get; set; }
         public string[] Options { get; set; }
-        public DateTime ExpirationTime { get; set; }
-
+        public DateTime Expiration { get; set; }
     }
 }

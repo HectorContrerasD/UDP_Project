@@ -8,7 +8,7 @@ namespace Server.Models.DTOs
 {
     public class ServerMessageDTO
     {
-        public QuestionDTO Question { get; set; }
         public string Type { get; set; }
+        public QuestionMessageDTO? Question { get; set; }
     }
 }
