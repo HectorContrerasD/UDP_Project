@@ -37,8 +37,11 @@ namespace Server.Services
                 var message = JsonSerializer.Deserialize<ClientMessageDTO>(json);
                 if (message != null)
                 {
-                    // NOTE: This event must be invoked in the main thread through the Dispatcher class
-                    MessageReceived?.Invoke(this, message);
+                    // Invocar el evento en el hilo principal (UI thread)
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        MessageReceived?.Invoke(this, message);
+                    });
                 }
             }
         }
@@ -50,15 +53,15 @@ namespace Server.Services
                 Type = "QUESTION",
                 Question = new QuestionMessageDTO
                 {
-                    Id = question.Id,
+                    Id = Guid.NewGuid(), 
                     Question = question.Question,
-                    Options = question.Options,
-                    Expiration = DateTime.UtcNow + question.TimeOut
+                    Options = new[] { "True", "False" }, 
+                    Expiration = DateTime.UtcNow + TimeSpan.FromSeconds(10) //
                 }
             };
             var json = JsonSerializer.Serialize(message);
             var buffer = Encoding.UTF8.GetBytes(json);
-            await Client.SendAsync(buffer, new IPEndPoint(IPAddress.Broadcast, Port));
+            await Client.SendAsync(buffer, buffer.Length, new IPEndPoint(IPAddress.Broadcast, Port));
         }
     }
 }
