@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Server.Models.DTOs
+namespace Client.Models.DTOs
 {
-    public class AnswerModel
+    public class ResultDTO
     {
         public string UserName { get; set; } 
-        public string? SelectedOption { get; set; } 
+        public int CorrectAnswers { get; set; } 
     }
 }

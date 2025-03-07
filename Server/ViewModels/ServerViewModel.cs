@@ -1,97 +1,126 @@
-﻿using GalaSoft.MvvmLight.Command;
+﻿
+using GalaSoft.MvvmLight.Command;
 using Server.Models;
 using Server.Models.DTOs;
 using Server.Services;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+
 using System.ComponentModel;
-using System.Linq;
+
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Input;
+
 
 namespace Server.ViewModels
 {
     public class ServerViewModel : INotifyPropertyChanged
     {
-        public IPAddress IpAddress { get; }
-        public int Port { get; set; }
-        public ServerService? Service { get; set; }
 
-        public string Question { get; set; }
-        public string[] Options { get; set; }
-        public string Correct { get; set; }
-        public int Seconds { get; set; }
-        public int Counter { get; set; }
+        private ServerService _serverService;
+        private List<QuestionModel> _questions;
+        private int _currentQuestionIndex;
+        private int _secondsRemaining;
+        private System.Timers.Timer _timer; // Ahora no hay ambigüedad
+        private Dictionary<string, int> _userScores = new Dictionary<string, int>();
 
-        public List<QuestionModel> Questions { get; } = new List<QuestionModel>();
-        public System.Timers.Timer Timer { get; set; }
-        public event EventHandler<QuestionModel>? QuizFinished;
+        public string IpAddress { get; }
+        public int Port { get; } = 5000;
 
-        public async void StartQuiz()
+        public string CurrentQuestion => _questions[_currentQuestionIndex].Question;
+        public string[] CurrentOptions => _questions[_currentQuestionIndex].Options;
+        public string CorrectAnswer => _questions[_currentQuestionIndex].CorrectAnswer;
+
+        public int SecondsRemaining
         {
-            if (Service == null)
+            get => _secondsRemaining;
+            set
             {
-                Service = new ServerService(Port);
-                Service.MessageReceived += MessageReceived;
+                _secondsRemaining = value;
+                OnPropertyChanged(nameof(SecondsRemaining));
             }
+        }
 
-            var question = new QuestionModel
+        public ICommand StartQuizCommand { get; }
+
+        public ServerViewModel()
+        {
+           
+            var ips = Dns.GetHostAddresses(Dns.GetHostName());
+            IpAddress = ips
+                .Where(x => x.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                .Select(x => x.ToString())
+                .FirstOrDefault() ?? "0.0.0.0";
+            _serverService = new ServerService(Port);
+            _serverService.AnswerReceived += OnAnswerReceived;
+            _serverService.QuizFinished += OnQuizFinished;
+            _questions = new List<QuestionModel>
             {
-                Id = Guid.NewGuid(),
-                Question = Question,
-                Options = Options,
-                Correct = Correct,
-                TimeOut = TimeSpan.FromSeconds(Seconds),
-                Answers = new List<AnswerModel>()
+                new QuestionModel
+                {
+                    Question = "Vulpix originalmente es de tipo fuego, ¿de qué región es la variante de Vulpix tipo hielo?",
+                    Options = new[] { "Alola", "Kalos" },
+                    CorrectAnswer = "Alola"
+                },
+                // Agrega más preguntas aquí...
             };
 
-            Questions.Add(question);
-            await Service.SendQuestion(question);
-            Counter = Seconds;
+           
+            _timer = new System.Timers.Timer(1000); // 1 segundo
+            _timer.Elapsed += OnTimerElapsed;
+
+            
+            StartQuizCommand = new RelayCommand(StartQuiz);
         }
 
-        private void MessageReceived(object? sender, ClientMessageDTO message)
+        private void StartQuiz()
         {
-            if (message.Type == "ANSWER" && message.Answer != null)
+            _currentQuestionIndex = 0;
+            SecondsRemaining = 10; // 10 segundos por pregunta
+            _timer.Start();
+            _serverService.SendQuestionAsync(_questions[_currentQuestionIndex]);
+        }
+
+        private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            if (SecondsRemaining > 0)
             {
-                var lastQuestion = Questions.Last();
-                var lastAnswer = lastQuestion.Answers.FirstOrDefault(x => x.Id == message.Answer.Id);
-                if (lastAnswer != null || Counter == 0) return;
-                lastQuestion.Answers.Add(new AnswerModel
-                {
-                    Id = message.Answer.Id,
-                    Name = message.Answer.Name,
-                    Correct = message.Answer.Option == lastQuestion.Correct
-                });
-                Console.WriteLine($"Answer received: {message.Answer.Name} --> {message.Answer.Option}");
+                SecondsRemaining--;
             }
-        }
-
-        private void TimerMethod(object? sender, EventArgs e)
-        {
-            if (Counter > 0)
+            else
             {
-                Counter -= 1;
-                Console.WriteLine($"Counter: {Counter}");
-                if (Counter == 0)
+             
+                _currentQuestionIndex++;
+                if (_currentQuestionIndex < _questions.Count)
                 {
-                    QuizFinished?.Invoke(this, Questions.Last());
+                    SecondsRemaining = 10;
+                    _serverService.SendQuestionAsync(_questions[_currentQuestionIndex]);
+                }
+                else
+                {
+                    
+                    _timer.Stop();
+                    _serverService.SendResultsAsync();
                 }
             }
         }
 
-        public ServerViewModel()
+        private void OnAnswerReceived(object sender, AnswerModel answer)
         {
-            IpAddress = Dns.GetHostAddresses(Dns.GetHostName()).Where(x => x.AddressFamily == AddressFamily.InterNetwork).First();
-            Port = 5001;
-            Timer = new System.Timers.Timer(TimeSpan.FromSeconds(1));
-            Timer.Elapsed += TimerMethod;
-            Timer.Start();
+           
+            bool isCorrect = answer.SelectedOption == _questions[_currentQuestionIndex].CorrectAnswer;
+            _serverService.UpdateUserScore(answer.UserName, isCorrect);
         }
-        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnQuizFinished(object sender, EventArgs e)
+        {
+            // Mostrar la vista de resultados
+            // (Aquí puedes implementar la navegación a la vista de resultados)
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

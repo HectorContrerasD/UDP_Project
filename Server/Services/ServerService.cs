@@ -1,67 +1,93 @@
 ﻿using Server.Models;
 using Server.Models.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace Server.Services
 {
     public class ServerService
     {
-        public int Port { get; }
-        private UdpClient Client { get; }
+        private UdpClient _udpClient;
+        private int _port;
+        private Dictionary<string, int> _userScores = new Dictionary<string, int>(); 
+
+        public event EventHandler<AnswerModel> AnswerReceived; 
+        public event EventHandler QuizFinished;
 
         public ServerService(int port)
         {
-            Port = port;
-            Client = new UdpClient(port);
-            var thread = new Thread(Start);
-            thread.IsBackground = true;
-            thread.Start();
+            _port = port;
+            _udpClient = new UdpClient(port);
+            Task.Run(ReceiveAnswersAsync); 
         }
 
-        public EventHandler<ClientMessageDTO>? MessageReceived;
+       
+        public async Task SendQuestionAsync(QuestionModel question)
+        {
+            var json = JsonSerializer.Serialize(question);
+            var buffer = Encoding.UTF8.GetBytes(json);
 
-        private async void Start()
+           
+            var endpoint = new IPEndPoint(IPAddress.Broadcast, _port);
+            await _udpClient.SendAsync(buffer, buffer.Length, endpoint);
+        }
+
+      
+        private async Task ReceiveAnswersAsync()
         {
             while (true)
             {
-                var result = await Client.ReceiveAsync();
+                var result = await _udpClient.ReceiveAsync();
                 var json = Encoding.UTF8.GetString(result.Buffer);
-                var message = JsonSerializer.Deserialize<ClientMessageDTO>(json);
-                if (message != null)
+                var answer = JsonSerializer.Deserialize<AnswerModel>(json);
+
+                if (answer != null)
                 {
-                    // Invocar el evento en el hilo principal (UI thread)
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        MessageReceived?.Invoke(this, message);
-                    });
+                   
+                    AnswerReceived?.Invoke(this, answer);
                 }
             }
         }
 
-        public async Task SendQuestion(QuestionModel question)
+      
+        public async Task SendResultsAsync()
         {
-            var message = new ServerMessageDTO
+            foreach (var userScore in _userScores)
             {
-                Type = "QUESTION",
-                Question = new QuestionMessageDTO
+                var result = new UserScoreModel
                 {
-                    Id = Guid.NewGuid(), 
-                    Question = question.Question,
-                    Options = new[] { "True", "False" }, 
-                    Expiration = DateTime.UtcNow + TimeSpan.FromSeconds(10) //
+                    UserName = userScore.Key,
+                    CorrectAnswers = userScore.Value
+                };
+
+                var json = JsonSerializer.Serialize(result);
+                var buffer = Encoding.UTF8.GetBytes(json);
+
+            
+                var endpoint = new IPEndPoint(IPAddress.Broadcast, _port);
+                await _udpClient.SendAsync(buffer, buffer.Length, endpoint);
+            }
+
+        
+            QuizFinished?.Invoke(this, EventArgs.Empty);
+        }
+
+       
+        public void UpdateUserScore(string userName, bool isCorrect)
+        {
+            if (_userScores.ContainsKey(userName))
+            {
+                if (isCorrect)
+                {
+                    _userScores[userName]++;
                 }
-            };
-            var json = JsonSerializer.Serialize(message);
-            var buffer = Encoding.UTF8.GetBytes(json);
-            await Client.SendAsync(buffer, buffer.Length, new IPEndPoint(IPAddress.Broadcast, Port));
+            }
+            else
+            {
+                _userScores[userName] = isCorrect ? 1 : 0;
+            }
         }
     }
 }
