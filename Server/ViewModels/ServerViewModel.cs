@@ -113,8 +113,7 @@ namespace Server.ViewModels
 
         private void OnQuizFinished(object sender, EventArgs e)
         {
-            // Mostrar la vista de resultados
-            // (Aquí puedes implementar la navegación a la vista de resultados)
+           
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

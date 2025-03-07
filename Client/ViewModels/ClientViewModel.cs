@@ -1,5 +1,6 @@
 ﻿using Client.Models.DTOs;
 using Client.Services;
+using Client.Views;
 using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Client.ViewModels
@@ -18,7 +20,6 @@ namespace Client.ViewModels
         private string _currentQuestion;
         private string[] _currentOptions;
         private int _correctAnswers;
-
         public string ServerIp
         {
             get => _serverIp;
@@ -64,12 +65,10 @@ namespace Client.ViewModels
 
         public ClientViewModel()
         {
-           
+            
             ConnectCommand = new RelayCommand(Connect);
             SendAnswerCommand = new RelayCommand(SendAnswer);
-
-       
-            _clientService = new ClientService(ServerIp, 5000);
+         
             _clientService.QuestionReceived += OnQuestionReceived;
             _clientService.ResultReceived += OnResultReceived;
         }
@@ -77,7 +76,22 @@ namespace Client.ViewModels
         private void Connect()
         {
 
-            _clientService = new ClientService(ServerIp, 5000);
+            
+            if (string.IsNullOrWhiteSpace(ServerIp))
+            {
+                MessageBox.Show("Por favor, ingresa una dirección IP válida.");
+                return;
+            }
+
+           
+            var ClientView = new ClientView()
+            {
+                DataContext = new ClientView() 
+            };
+            ClientView.Show();
+
+            
+            Application.Current.MainWindow.Close();
         }
 
         private void SendAnswer()
