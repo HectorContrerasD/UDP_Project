@@ -7,9 +7,9 @@
              mc:Ignorable="d"
              xmlns:vm="clr-namespace:Client.ViewModels"
              d:DesignHeight="450" d:DesignWidth="800">
-    <Window.DataContext>
+    <!--<Window.DataContext>
         <vm:ClientViewModel></vm:ClientViewModel>
-    </Window.DataContext>
+    </Window.DataContext>-->
     <DockPanel>
         <DockPanel.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -33,7 +33,7 @@
             <Border Height="70" Width="330" Background="#F8F8D8" BorderThickness="6" BorderBrush="#506860">
                 <UniformGrid Columns="3" Rows="1" Margin="10">
                     <Label FontSize="20">Nivel:</Label>
-                    <Label FontSize="20">5</Label>
+                    <TextBlock FontSize="20" Text="{Binding}"></TextBlock>
                     <ProgressBar Height="15" Value="{Binding A}" Background="#64EC99" Margin="-61,12,0,11"/>
                 </UniformGrid>
             </Border>
@@ -44,12 +44,18 @@
             <Border Background="#F8F8F8" Height="100" HorizontalAlignment="Left" Width="750" Margin="20 0" BorderBrush="#A09576" BorderThickness="10">
                 <Label Name="question" Foreground="Black" IsEnabled="False" MaxWidth="700" HorizontalAlignment="Center" FontSize="20" Padding="10 5" Content="{Binding CurrentQuestion}"></Label>
             </Border>
-            <UniformGrid Name="Options" Margin="20 10" Rows="1" VerticalAlignment="Top">
+            <UniformGrid Name="Options" Margin="20 10" Rows="2" VerticalAlignment="Top">
                 <Border Background="#DC3C34">
                     <Button Command="{Binding SendAnswerCommand}" CommandParameter="{Binding CurrentOptions[0]}"></Button>
                 </Border>
                 <Border Background="#E0982C">
                     <Button Command="{Binding SendAnswerCommand}" CommandParameter="{Binding CurrentOptions[1]}"></Button>
+                </Border>
+                <Border Background="#E0982C">
+                    <Button Command="{Binding SendAnswerCommand}" CommandParameter="{Binding CurrentOptions[2]}"></Button>
+                </Border>
+                <Border Background="#DC3C34">
+                    <Button Command="{Binding SendAnswerCommand}" CommandParameter="{Binding CurrentOptions[3]}"></Button>
                 </Border>
             </UniformGrid>
         </UniformGrid>
