@@ -23,5 +23,9 @@ namespace Client.Views
         {
             InitializeComponent();
         }
+        private void InitializeComponent()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

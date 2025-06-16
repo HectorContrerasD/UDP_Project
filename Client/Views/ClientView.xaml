@@ -5,11 +5,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:Client.Views"
              mc:Ignorable="d"
-             xmlns:vm="clr-namespace:Client.ViewModels"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <!--<Window.DataContext>
+            xmlns:vm="clr-namespace:Client.ViewModels"
+             d:DesignHeight="450" d:DesignWidth="800"
+        >
+    <Window.DataContext>
         <vm:ClientViewModel></vm:ClientViewModel>
-    </Window.DataContext>-->
+    </Window.DataContext>
     <DockPanel>
         <DockPanel.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
@@ -33,8 +34,8 @@
             <Border Height="70" Width="330" Background="#F8F8D8" BorderThickness="6" BorderBrush="#506860">
                 <UniformGrid Columns="3" Rows="1" Margin="10">
                     <Label FontSize="20">Nivel:</Label>
-                    <TextBlock FontSize="20" Text="{Binding}"></TextBlock>
-                    <ProgressBar Height="15" Value="{Binding A}" Background="#64EC99" Margin="-61,12,0,11"/>
+                    <!--<TextBlock FontSize="20" Text="{Binding}">10</TextBlock>-->
+                    <ProgressBar Height="15"  Background="#64EC99" Margin="-10,12,0,11"/>
                 </UniformGrid>
             </Border>
             <Image Height="140" Source="/Assets/chari.png"></Image>

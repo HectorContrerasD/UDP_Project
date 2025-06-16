@@ -4,11 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:Client.Views"
              mc:Ignorable="d"
-             xmlns:vm ="clr-namespace:Client.ViewModels"
+             xmlns:vm="clr-namespace:Client.ViewModels"
+             
              d:DesignHeight="450" Background="Transparent" d:DesignWidth="800">
-    <!--<Window.DataContext>
+    <Window.DataContext>
         <vm:ClientViewModel></vm:ClientViewModel>
-    </Window.DataContext>-->
+    </Window.DataContext>
     <StackPanel Background="#E83030" Width="400">
         <Border>
             <Border.Background>
@@ -30,9 +31,9 @@
         <Border BorderThickness="3" Width="230" CornerRadius="0 20 20 0" BorderBrush="#444444" Background="#E3E3E3">
             <UniformGrid Columns="2" Rows="2">
                 <Label Background="#444444"  Foreground="White">Nombre</Label>
-                <TextBlock FontSize="14" Padding="10 5" Foreground="Black"  Text="{Binding}"></TextBlock>
+                <TextBox FontSize="14" Padding="10 5" Foreground="Black"  Text="{Binding UserName }"></TextBox>
                 <Label Background="#444444"  Foreground="White">Dirección IP</Label>
-                <TextBlock FontSize="14" Padding="10 5" Foreground="Black" Text="{Binding ServerIp}"></TextBlock>
+                <TextBox FontSize="14" Padding="10 5" Foreground="Black" Text="{Binding ServerIp}"></TextBox>
             </UniformGrid>
         </Border>
         <Border Background="#444444" Margin="40" Width="230" Height="30" CornerRadius="20" BorderThickness=" 0 0 0 2" BorderBrush="Black">
@@ -40,3 +41,4 @@
         </Border>
     </StackPanel>
 </Window>
+
