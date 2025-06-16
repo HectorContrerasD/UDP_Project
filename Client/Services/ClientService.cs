@@ -15,16 +15,25 @@ namespace Client.Services
         private UdpClient _udpClient;
         private string _serverIp;
         private int _port;
+        private string _userName;
+        private string _clientIp;
 
         public event EventHandler<QuestionDto> QuestionReceived; 
         public event EventHandler<ResultDTO> ResultReceived; 
 
-        public ClientService(string serverIp, int port)
+        public ClientService(string serverIp, int port,string UserName,string ip)
         {
             _serverIp = serverIp;
             _port = port;
-            _udpClient = new UdpClient();
-            Task.Run(ReceiveMessagesAsync); 
+            _userName = UserName;
+            _clientIp = ip;
+            _udpClient = new UdpClient(11000);
+            var hilo = new Thread(new ThreadStart(ReceiveMessagesAsync))
+            {
+                IsBackground = true
+            };
+            hilo.Start();
+            //Task.Run(ReceiveMessagesAsync); 
         }
 
       
@@ -33,17 +42,30 @@ namespace Client.Services
             var json = JsonSerializer.Serialize(answer);
             var buffer = Encoding.UTF8.GetBytes(json);
 
-            var endpoint = new IPEndPoint(IPAddress.Parse(_serverIp), _port);
+            var endpoint = new IPEndPoint(IPAddress.Parse(_serverIp), 5001);
             await _udpClient.SendAsync(buffer, buffer.Length, endpoint);
         }
 
+        public void SendRegistration()
+        {
+            var registration = new RegistrationDto
+            {
+                UserName = _userName,
+                IPAddress = _clientIp
+            };
 
-        private async Task ReceiveMessagesAsync()
+            var json = JsonSerializer.Serialize(registration);
+            var buffer = Encoding.UTF8.GetBytes(json);
+            var endpoint = new IPEndPoint(IPAddress.Parse(_serverIp), 5001);
+            _udpClient.Send(buffer, buffer.Length, endpoint);
+        }
+        private void ReceiveMessagesAsync()
         {
             while (true)
             {
-                var result = await _udpClient.ReceiveAsync();
-                var json = Encoding.UTF8.GetString(result.Buffer);
+                IPEndPoint rem = new IPEndPoint(IPAddress.Any, 0);
+                var result = _udpClient.Receive(ref rem);
+                var json = Encoding.UTF8.GetString(result);
 
               
                 if (json.Contains("Question"))

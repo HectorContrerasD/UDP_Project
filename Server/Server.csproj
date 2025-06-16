@@ -11,7 +11,6 @@
   <ItemGroup>
     <None Remove="Assets\chari.png" />
     <None Remove="Assets\chariespalda.png" />
-    <None Remove="Assets\Preguntas.json" />
     <None Remove="Assets\torchi.png" />
     <None Remove="Assets\torchifrente.png" />
   </ItemGroup>
@@ -28,15 +27,18 @@
     <Resource Include="Assets\chariespalda.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <Resource Include="Assets\Preguntas.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Assets\torchi.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Assets\torchifrente.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Assets\Preguntas.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

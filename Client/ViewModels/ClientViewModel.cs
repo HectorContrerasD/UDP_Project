@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,9 +19,20 @@ namespace Client.ViewModels
     {
         private ClientService _clientService;
         private string _serverIp;
+        private string _userName;
+
         private string _currentQuestion;
         private string[] _currentOptions;
         private int _correctAnswers;
+        public string UserName
+        {
+            get => _userName;
+            set
+            {
+                _userName = value;
+                OnPropertyChanged(nameof(UserName));
+            }
+        }
         public string ServerIp
         {
             get => _serverIp;
@@ -63,14 +76,15 @@ namespace Client.ViewModels
         public ICommand ConnectCommand { get; }
         public ICommand SendAnswerCommand { get; }
 
+
         public ClientViewModel()
         {
             
             ConnectCommand = new RelayCommand(Connect);
             SendAnswerCommand = new RelayCommand(SendAnswer);
          
-            _clientService.QuestionReceived += OnQuestionReceived;
-            _clientService.ResultReceived += OnResultReceived;
+            //_clientService.QuestionReceived += OnQuestionReceived;
+            //_clientService.ResultReceived += OnResultReceived;
         }
 
         private void Connect()
@@ -83,12 +97,22 @@ namespace Client.ViewModels
                 return;
             }
 
-           
-            var ClientView = new ClientView()
+
+            string localIp = GetLocalIpAddress();
+
+            _clientService = new ClientService(ServerIp, 5001, UserName, localIp);
+            _clientService.QuestionReceived += OnQuestionReceived;
+            _clientService.ResultReceived += OnResultReceived;
+
+            // Enviar registro al servidor
+            _clientService.SendRegistration();
+
+            var clientView = new ClientView()
             {
-                DataContext = new ClientView() 
+                DataContext = this // Corregido: usar el ViewModel actual
             };
-            ClientView.Show();
+            
+            clientView.Show();
 
             
             Application.Current.MainWindow.Close();
@@ -99,18 +123,32 @@ namespace Client.ViewModels
           
             var answer = new AnswerMessageDTO
             {
-                UserName = Environment.UserName,
+                UserName = UserName,
                 SelectedOption = "Alola" 
             };
 
             _clientService.SendAnswerAsync(answer);
         }
-
+        private string GetLocalIpAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            return "127.0.0.1"; // Fallback a localhost
+        }
         private void OnQuestionReceived(object sender, QuestionDto question)
         {
 
             CurrentQuestion = question.Question;
             CurrentOptions = question.Options;
+
+            OnPropertyChanged(nameof(CurrentQuestion));
+            OnPropertyChanged(nameof(CurrentOptions));
         }
 
         private void OnResultReceived(object sender, ResultDTO result)
@@ -120,7 +158,7 @@ namespace Client.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName)
+        protected void OnPropertyChanged(string propertyName=null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
